@@ -1,0 +1,86 @@
+﻿@page "/product-list"
+@attribute [RenderModeInteractiveAuto]
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card">
+                    <div class="card-header"> <button class="btn btn-primary float-end" @onclick="NavigateToAddProductPage"> Add Product </button></div>
+                </div>
+                @if (Products.Count > 0)
+                {
+                    <div class="card-header">Product List
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Product Id</th>
+                                    <th>Product Name</th>
+                                    <th>Product Quantity</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var product in Products)
+                                {
+                                    <tr>
+                                        <td>@product.Id</td>
+                                        <td>@product.Name</td>
+                                        <td>@product.Quantity</td>
+                                        <td>
+                                            <div class="hstack gap-2">
+                                                <button class="btn  btn-info" @onclick="()=>Edit(product)"> Edit</button>
+                                                <button class="btn  btn-danger" @onclick="() => Delete(product.Id)"> Delete</button>
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info"> No Product Available </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Product> Products { get; set; } = new();
+
+    private async Task LoadProducts()
+    {
+        var products = await ProductService.GetAllProductsAsync();
+        Products?.Clear();
+        if (Products is null) return;
+        foreach (var product in products)
+            Products.Add(product);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private void NavigateToAddProductPage()
+    {
+        NavigationManager.NavigateTo("manage-product");
+    }
+
+    private void Edit(Product model)
+    {
+        NavigationManager.NavigateTo($"manage-product/{model.Id}");
+    }
+
+    private async Task Delete(int id)
+    {
+        var product = await ProductService.DeleteProductAsync(id);
+        await LoadProducts();
+    }
+}

@@ -1,0 +1,69 @@
+﻿@page "/manage-product"
+@page "/manage-product/{Id:int}"
+@attribute [RenderModeInteractiveAuto]
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Add Product</div>
+                <div class="card-body">
+                    <EditForm Model="ProductModel" OnValidSubmit="HandleSave">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group">
+                            <label class="form-label">Product Name</label>
+                            <InputText @bind-Value="ProductModel.Name" class="form-control"></InputText>
+                            <ValidationMessage For="()=>ProductModel.Name"></ValidationMessage>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Product Quantity</label>
+                            <InputNumber @bind-Value="ProductModel.Quantity" class="form-control"></InputNumber>
+                            <ValidationMessage For="()=>ProductModel.Quantity"></ValidationMessage>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary"> Save</button>
+                    </EditForm>
+                </div>
+
+                <div class="card-footer">
+                    Id: @ReturnProduct.Id <br />
+                    Name:@ReturnProduct.Name <br />
+                    Quantity: @ReturnProduct.Quantity
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    public Product ProductModel { get; set; } = new();
+    [Parameter] public int Id { get; set; }
+
+    private Product ReturnProduct = new();
+    private async Task HandleSave()
+    {
+        if (ProductModel.Id > 0)
+        {
+            ReturnProduct = await ProductService.UpdateProductAsync(ProductModel);
+            ProductModel = new();
+        }
+
+        else
+        {
+            ReturnProduct = await ProductService.AddProductAsync(ProductModel);
+            ProductModel = new();
+
+        }
+
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id > 0)
+            ProductModel = await ProductService.GetProductByIdAsync(Id);
+    }
+}
